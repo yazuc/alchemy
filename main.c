@@ -45,7 +45,7 @@ void keyboard(unsigned char key, int x, int y);
 // Largura e altura da janela
 int width, height;
 
-#define tolerancia  50.00
+#define tolerancia  40.00
 
 // calcula a distancia euclidiana entre duas cores e retorna ok caso a distancia seja menor ou igual à tolerancia.
 // usado para diferenciar se preenche com preto ou se usa a cor mais próxima disponível
@@ -53,40 +53,18 @@ bool coresProximas(RGBpixel cor1, RGBpixel cor2) {
     RGBpixel cor1_copy = cor1;
     RGBpixel cor2_copy = cor2;
     
-    double distancia_quadrada = pow((cor1.r - cor2.r), 2) + pow((cor1.g - cor2.g), 2) + pow((cor1.b - cor2.b), 2);    
+    double distancia_quadrada = pow((cor1_copy.r - cor2_copy.r), 2) + pow((cor1_copy.g - cor2_copy.g), 2) + pow((cor1_copy.b - cor2_copy.b), 2);    
     return distancia_quadrada <= tolerancia * tolerancia;
-}
-
-// Função para embaralhar os pixels de uma imagem
-void embaralharImagem(RGBpixel *imagem, int largura, int altura) {
-    // Define a semente para a função rand() com base no tempo atual
-    srand(time(NULL));
-
-    // Calcula o total de pixels na imagem
-    int total_pixels = largura * altura;
-
-    // Embaralha os pixels
-    for (int i = 0; i < total_pixels; i++) {
-        // Escolhe um índice aleatório para trocar com o índice atual
-        int j = rand() % total_pixels;
-
-        // Troca os pixels nas posições i e j
-        RGBpixel temp = imagem[i];
-        imagem[i] = imagem[j];
-        imagem[j] = temp;
-    }
 }
 
 void preencherImagem(RGBpixel *imagem_saida, RGBpixel *imagem_origem, RGBpixel *imagem_desejada, int largura_origem, int altura_origem, int largura_desejada, int altura_desejada) {
     
     // Cria um array para marcar se um pixel de origem já foi usado
-    //embaralharImagem(imagem_origem, largura_desejada, altura_desejada);
-    //embaralharImagem(imagem_saida, largura_desejada, altura_desejada);
 
     bool *pixel_usado = (bool *)malloc(largura_origem * altura_origem * sizeof(bool));
     if (pixel_usado == NULL) {
         // Verifica se a alocação de memória foi bem-sucedida
-        printf("Erro ao alocar memória para o array de pixels usados\n");
+        printf("Erro ao alocar memoria para o array de pixels usados\n");
         return;
     }
 
@@ -229,13 +207,7 @@ int main(int argc, char *argv[])
     // Exemplo de manipulação: inverte as cores na imagem de saída
     /**/
     // Implementação do algoritmo de transmutação de imagens
-
-    //Inicialização de variáveis para mostrar o progresso no console
-    int totaliteracoes = pic[SAIDA].height * pic[SAIDA].width;
-    int progresso = 0;
     
-    //Img* nova =  redimensionarImagem(&pic[ORIGEM], pic[DESEJ].width, pic[DESEJ].height);
-
     //copia pixels de origem para saida, para garantir que todos os pixels estarão na imagem no do processo
     pic[SAIDA].pixels = pic[ORIGEM].pixels;
 
