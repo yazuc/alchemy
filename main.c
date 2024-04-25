@@ -45,7 +45,7 @@ void keyboard(unsigned char key, int x, int y);
 // Largura e altura da janela
 int width, height;
 
-#define tolerancia  65.0
+#define tolerancia  50.00
 
 // calcula a distancia euclidiana entre duas cores e retorna ok caso a distancia seja menor ou igual à tolerancia.
 // usado para diferenciar se preenche com preto ou se usa a cor mais próxima disponível
@@ -83,8 +83,9 @@ void embaralharImagem(RGBpixel *imagem, int largura, int altura) {
 void preencherImagem(RGBpixel *imagem_saida, RGBpixel *imagem_origem, RGBpixel *imagem_desejada, int largura_origem, int altura_origem, int largura_desejada, int altura_desejada) {
     
     // Cria um array para marcar se um pixel de origem já foi usado
-    //embaralharImagem(imagem_saida, largura_saida, altura_saida);
-   
+    //embaralharImagem(imagem_origem, largura_desejada, altura_desejada);
+    //embaralharImagem(imagem_saida, largura_desejada, altura_desejada);
+
     bool *pixel_usado = (bool *)malloc(largura_origem * altura_origem * sizeof(bool));
     if (pixel_usado == NULL) {
         // Verifica se a alocação de memória foi bem-sucedida
@@ -96,15 +97,8 @@ void preencherImagem(RGBpixel *imagem_saida, RGBpixel *imagem_origem, RGBpixel *
     for (int i = 0; i < largura_origem * altura_origem; i++) {
         pixel_usado[i] = false;
     }
-
-    RGBpixel *imagem_saida_original = (RGBpixel *)malloc(largura_desejada * altura_desejada * sizeof(RGBpixel));
-    if (imagem_saida_original == NULL) {
-        // Verifica se a alocação de memória foi bem-sucedida
-        printf("Erro ao alocar memória para a cópia da imagem de saída\n");
-        free(pixel_usado);
-        return;
-    }
-    memcpy(imagem_saida, imagem_origem, largura_origem * altura_origem * sizeof(RGBpixel));
+    
+    memcpy(imagem_saida, imagem_origem, largura_desejada * altura_desejada * sizeof(RGBpixel));
     
     for (int i = 0; i < altura_desejada; i++) {
         for (int j = 0; j < largura_desejada; j++) {
@@ -128,15 +122,16 @@ void preencherImagem(RGBpixel *imagem_saida, RGBpixel *imagem_origem, RGBpixel *
                     //Verifica se o pixel de origem já foi usado
                     if (!pixel_usado[idx_origem]) {
                         // Usa a função coresProximas para verificar se a cor da imagem de origem é próxima o suficiente
-                        
+
+
                         if (coresProximas(imagem_desejada[idx_desejada], imagem_origem[idx_origem])) {
+
                             imagem_saida[idx_saida] = imagem_origem[idx_origem];
 
                             // Marca o pixel de origem como usado
                             cor_encontrada = true;
                             pixel_usado[idx_origem] = true;
                             break; // Sai do loop interno se encontrar uma cor próxima
-
                         }
                     }
                 }
@@ -146,46 +141,9 @@ void preencherImagem(RGBpixel *imagem_saida, RGBpixel *imagem_origem, RGBpixel *
             }    
         }
     }
-    //Preenche os pixels que não tiveram correspondência com a cor original
-    for (int i = 0; i < largura_desejada * altura_desejada; i++) {
-        if (!pixel_usado[i]) {
-            imagem_saida[i] = imagem_saida_original[i];
-        }
-    }
     // Libera a memória alocada para o array de pixels usados
-    free(imagem_saida_original);
     free(pixel_usado);
 }
-
-// Compara se a troca é vantajoso para ambas as posições
-int compararPixel(RGBpixel *ref1, RGBpixel *ref2, RGBpixel *pixel1, RGBpixel *pixel2) {
-    int valueP1Red = abs(ref1->r - pixel1->r);
-    int valueP1Blue = abs(ref1->b - pixel1->b);
-    int valueP1Green = abs(ref1->g - pixel1->g);
-    int difRef1P1 = valueP1Red + valueP1Blue + valueP1Green;
-
-    int valueP2Red = abs(ref1->r - pixel2->r);
-    int valueP2Blue = abs(ref1->b - pixel2->b);
-    int valueP2Green = abs(ref1->g - pixel2->g);
-    int difRef1P2 = valueP2Red + valueP2Blue + valueP2Green;
-
-    int ref2valueP1Red = abs(ref2->r - pixel1->r);
-    int ref2valueP1Blue = abs(ref2->b - pixel1->b);
-    int ref2valueP1Green = abs(ref2->g - pixel1->g);
-    int difRef2P1 = ref2valueP1Red + ref2valueP1Blue + ref2valueP1Green;
-
-    int ref2valueP2Red = abs(ref2->r - pixel2->r);
-    int ref2valueP2Blue = abs(ref2->b - pixel2->b);
-    int ref2valueP2Green = abs(ref2->g - pixel2->g);
-    int difRef2P2 = ref2valueP2Red + ref2valueP2Blue + ref2valueP2Green;
-
-    if (difRef1P2 < difRef1P1 && difRef2P1 < difRef2P2) {
-        return 1;
-    }
-
-    return 0;
-}
-
 
 // Identificadores de textura
 GLuint tex[3];
@@ -283,6 +241,8 @@ int main(int argc, char *argv[])
     int totaliteracoes = pic[SAIDA].height * pic[SAIDA].width;
     int progresso = 0;
     
+    //Img* nova =  redimensionarImagem(&pic[ORIGEM], pic[DESEJ].width, pic[DESEJ].height);
+
     preencherImagem(pic[SAIDA].pixels, pic[ORIGEM].pixels, pic[DESEJ].pixels, pic[ORIGEM].width, pic[ORIGEM].height,
      pic[DESEJ].width, pic[DESEJ].height);
 
