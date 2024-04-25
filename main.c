@@ -50,17 +50,13 @@ int width, height;
 // calcula a distancia euclidiana entre duas cores e retorna ok caso a distancia seja menor ou igual à tolerancia.
 // usado para diferenciar se preenche com preto ou se usa a cor mais próxima disponível
 bool coresProximas(RGBpixel cor1, RGBpixel cor2) {
-    // Create copies of cor1 and cor2
     RGBpixel cor1_copy = cor1;
     RGBpixel cor2_copy = cor2;
 
     // int distancia = distanciaManhattan(cor1_copy, cor2_copy);
     // return distancia <= tolerancia;
     
-    // Calculate the Euclidean distance between the colors
     double distancia = sqrt(pow((cor1_copy.r - cor2_copy.r), 2) + pow((cor1_copy.g - cor2_copy.g), 2) + pow((cor1_copy.b - cor2_copy.b), 2));    
-
-    // Check if the distance is less than or equal to the tolerance
     return distancia <= tolerancia;
 }
 
@@ -95,12 +91,15 @@ void preencherImagem(RGBpixel *imagem_saida, RGBpixel *imagem_origem, RGBpixel *
         return;
     }
 
+    int total_pixels_saida = largura_saida * altura_saida;
+
     // Inicializa todos os elementos desse array como não usados
     for (int i = 0; i < largura_origem * altura_origem; i++) {
         pixel_usado[i] = false;
     }
 
-    int total_pixels_saida = largura_saida * altura_saida;
+    RGBpixel *pixels_origem_usados = (RGBpixel *)malloc(total_pixels_saida * sizeof(RGBpixel));
+
 
     for (int i = 0; i < altura_saida; i++) {
         for (int j = 0; j < largura_saida; j++) {
@@ -126,9 +125,10 @@ void preencherImagem(RGBpixel *imagem_saida, RGBpixel *imagem_origem, RGBpixel *
                         // Usa a função coresProximas para verificar se a cor da imagem de origem é próxima o suficiente
                         
                         if (coresProximas(imagem_desejada[idx_desejada], imagem_origem[idx_origem])) {
-                            // Atribui a cor da imagem de origem à imagem de saída
+                            // Atribui a cor da imagem de origem à imagem de saída                           
+                            pixels_origem_usados[idx_saida] = imagem_saida[idx_saida];
                             imagem_saida[idx_saida] = imagem_origem[idx_origem];
-                            
+
                             // Marca o pixel de origem como usado
                             cor_encontrada = true;
                             pixel_usado[idx_origem] = true;
@@ -136,7 +136,6 @@ void preencherImagem(RGBpixel *imagem_saida, RGBpixel *imagem_origem, RGBpixel *
 
                         }else
                         {
-                            // Aqui você pode escolher uma cor específica para preencher os pixels que não têm correspondência
                             imagem_saida[idx_saida] = imagem_origem[idx_origem];
                         }
                     }
@@ -147,9 +146,9 @@ void preencherImagem(RGBpixel *imagem_saida, RGBpixel *imagem_origem, RGBpixel *
             }   
             // Se nenhuma cor próxima foi encontrada, preenche o pixel com a cor da imagem de origem
             if (!cor_encontrada) {
-                imagem_saida[idx_saida] = imagem_origem[idx_saida];
+                imagem_saida[idx_saida] = pixels_origem_usados[idx_saida];
 
-                printf("r: %d , g: %d, b: %d \n", imagem_origem[idx_saida].r, imagem_origem[idx_saida].g, imagem_origem[idx_saida].b);
+                //printf("r: %d , g: %d, b: %d \n", imagem_origem[idx_saida].r, imagem_origem[idx_saida].g, imagem_origem[idx_saida].b);
             }     
         }
     }
