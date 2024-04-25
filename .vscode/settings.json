@@ -1,0 +1,8 @@
+{
+    "files.associations": {
+        "math.h": "c",
+        "soil.h": "c",
+        "glut.h": "c"
+    },
+    "cmake.configureOnOpen": false
+}
