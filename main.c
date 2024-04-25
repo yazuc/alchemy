@@ -52,12 +52,9 @@ int width, height;
 bool coresProximas(RGBpixel cor1, RGBpixel cor2) {
     RGBpixel cor1_copy = cor1;
     RGBpixel cor2_copy = cor2;
-
-    // int distancia = distanciaManhattan(cor1_copy, cor2_copy);
-    // return distancia <= tolerancia;
     
-    double distancia = sqrt(pow((cor1_copy.r - cor2_copy.r), 2) + pow((cor1_copy.g - cor2_copy.g), 2) + pow((cor1_copy.b - cor2_copy.b), 2));    
-    return distancia <= tolerancia;
+    double distancia_quadrada = pow((cor1.r - cor2.r), 2) + pow((cor1.g - cor2.g), 2) + pow((cor1.b - cor2.b), 2);    
+    return distancia_quadrada <= tolerancia * tolerancia;
 }
 
 // Função para embaralhar os pixels de uma imagem
@@ -98,8 +95,6 @@ void preencherImagem(RGBpixel *imagem_saida, RGBpixel *imagem_origem, RGBpixel *
         pixel_usado[i] = false;
     }
     
-    memcpy(imagem_saida, imagem_origem, largura_desejada * altura_desejada * sizeof(RGBpixel));
-    
     for (int i = 0; i < altura_desejada; i++) {
         for (int j = 0; j < largura_desejada; j++) {
             // Índice do pixel na imagem de saída
@@ -122,8 +117,6 @@ void preencherImagem(RGBpixel *imagem_saida, RGBpixel *imagem_origem, RGBpixel *
                     //Verifica se o pixel de origem já foi usado
                     if (!pixel_usado[idx_origem]) {
                         // Usa a função coresProximas para verificar se a cor da imagem de origem é próxima o suficiente
-
-
                         if (coresProximas(imagem_desejada[idx_desejada], imagem_origem[idx_origem])) {
 
                             imagem_saida[idx_saida] = imagem_origem[idx_origem];
@@ -243,9 +236,14 @@ int main(int argc, char *argv[])
     
     //Img* nova =  redimensionarImagem(&pic[ORIGEM], pic[DESEJ].width, pic[DESEJ].height);
 
+    //copia pixels de origem para saida, para garantir que todos os pixels estarão na imagem no do processo
+    pic[SAIDA].pixels = pic[ORIGEM].pixels;
+
+    //chamada do método que realiza o processo
     preencherImagem(pic[SAIDA].pixels, pic[ORIGEM].pixels, pic[DESEJ].pixels, pic[ORIGEM].width, pic[ORIGEM].height,
      pic[DESEJ].width, pic[DESEJ].height);
 
+    //chama valida para mostrar toda vez que roda, por prguiça de apertar V 
      valida();
 
     /**/
