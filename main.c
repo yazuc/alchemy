@@ -45,7 +45,7 @@ void keyboard(unsigned char key, int x, int y);
 // Largura e altura da janela
 int width, height;
 
-#define tolerancia  50.0
+#define tolerancia  65.0
 
 // calcula a distancia euclidiana entre duas cores e retorna ok caso a distancia seja menor ou igual à tolerancia.
 // usado para diferenciar se preenche com preto ou se usa a cor mais próxima disponível
@@ -80,9 +80,10 @@ void embaralharImagem(RGBpixel *imagem, int largura, int altura) {
     }
 }
 
-void preencherImagem(RGBpixel *imagem_saida, RGBpixel *imagem_origem, RGBpixel *imagem_desejada, int largura_saida, int altura_saida, int largura_origem, int altura_origem, int largura_desejada, int altura_desejada) {
-    // Cria um array unidimensional para marcar se um pixel de origem já foi usado
-    embaralharImagem(imagem_origem, largura_origem, altura_origem);
+void preencherImagem(RGBpixel *imagem_saida, RGBpixel *imagem_origem, RGBpixel *imagem_desejada, int largura_origem, int altura_origem, int largura_desejada, int altura_desejada) {
+    
+    // Cria um array para marcar se um pixel de origem já foi usado
+    //embaralharImagem(imagem_saida, largura_saida, altura_saida);
    
     bool *pixel_usado = (bool *)malloc(largura_origem * altura_origem * sizeof(bool));
     if (pixel_usado == NULL) {
@@ -91,24 +92,28 @@ void preencherImagem(RGBpixel *imagem_saida, RGBpixel *imagem_origem, RGBpixel *
         return;
     }
 
-    int total_pixels_saida = largura_saida * altura_saida;
-
     // Inicializa todos os elementos desse array como não usados
     for (int i = 0; i < largura_origem * altura_origem; i++) {
         pixel_usado[i] = false;
     }
 
-    RGBpixel *pixels_origem_usados = (RGBpixel *)malloc(total_pixels_saida * sizeof(RGBpixel));
-
-
-    for (int i = 0; i < altura_saida; i++) {
-        for (int j = 0; j < largura_saida; j++) {
+    RGBpixel *imagem_saida_original = (RGBpixel *)malloc(largura_desejada * altura_desejada * sizeof(RGBpixel));
+    if (imagem_saida_original == NULL) {
+        // Verifica se a alocação de memória foi bem-sucedida
+        printf("Erro ao alocar memória para a cópia da imagem de saída\n");
+        free(pixel_usado);
+        return;
+    }
+    memcpy(imagem_saida, imagem_origem, largura_origem * altura_origem * sizeof(RGBpixel));
+    
+    for (int i = 0; i < altura_desejada; i++) {
+        for (int j = 0; j < largura_desejada; j++) {
             // Índice do pixel na imagem de saída
-            int idx_saida = i * largura_saida + j;
+            int idx_saida = i * largura_desejada + j;
 
             // Índice correspondente na imagem desejada
-            int idx_desejada_i = i * altura_desejada / altura_saida;
-            int idx_desejada_j = j * largura_desejada / largura_saida;
+            int idx_desejada_i = i * altura_desejada / altura_desejada;
+            int idx_desejada_j = j * largura_desejada / largura_desejada;
             int idx_desejada = idx_desejada_i * largura_desejada + idx_desejada_j;
 
             // Define a variável para dizer se encontrou a cor ou se vai preencher preto
@@ -120,13 +125,11 @@ void preencherImagem(RGBpixel *imagem_saida, RGBpixel *imagem_origem, RGBpixel *
                     // Índice do pixel na imagem de origem
                     int idx_origem = k * largura_origem + l;
 
-                    // Verifica se o pixel de origem já foi usado
+                    //Verifica se o pixel de origem já foi usado
                     if (!pixel_usado[idx_origem]) {
                         // Usa a função coresProximas para verificar se a cor da imagem de origem é próxima o suficiente
                         
                         if (coresProximas(imagem_desejada[idx_desejada], imagem_origem[idx_origem])) {
-                            // Atribui a cor da imagem de origem à imagem de saída                           
-                            pixels_origem_usados[idx_saida] = imagem_saida[idx_saida];
                             imagem_saida[idx_saida] = imagem_origem[idx_origem];
 
                             // Marca o pixel de origem como usado
@@ -134,25 +137,23 @@ void preencherImagem(RGBpixel *imagem_saida, RGBpixel *imagem_origem, RGBpixel *
                             pixel_usado[idx_origem] = true;
                             break; // Sai do loop interno se encontrar uma cor próxima
 
-                        }else
-                        {
-                            imagem_saida[idx_saida] = imagem_origem[idx_origem];
                         }
                     }
                 }
                 if (cor_encontrada) {
                     break; // Sai do loop externo se encontrar uma cor próxima
                 }
-            }   
-            // Se nenhuma cor próxima foi encontrada, preenche o pixel com a cor da imagem de origem
-            if (!cor_encontrada) {
-                imagem_saida[idx_saida] = pixels_origem_usados[idx_saida];
-
-                //printf("r: %d , g: %d, b: %d \n", imagem_origem[idx_saida].r, imagem_origem[idx_saida].g, imagem_origem[idx_saida].b);
-            }     
+            }    
+        }
+    }
+    //Preenche os pixels que não tiveram correspondência com a cor original
+    for (int i = 0; i < largura_desejada * altura_desejada; i++) {
+        if (!pixel_usado[i]) {
+            imagem_saida[i] = imagem_saida_original[i];
         }
     }
     // Libera a memória alocada para o array de pixels usados
+    free(imagem_saida_original);
     free(pixel_usado);
 }
 
@@ -282,7 +283,7 @@ int main(int argc, char *argv[])
     int totaliteracoes = pic[SAIDA].height * pic[SAIDA].width;
     int progresso = 0;
     
-    preencherImagem(pic[SAIDA].pixels, pic[ORIGEM].pixels, pic[DESEJ].pixels, pic[SAIDA].width, pic[SAIDA].height, pic[ORIGEM].width, pic[ORIGEM].height,
+    preencherImagem(pic[SAIDA].pixels, pic[ORIGEM].pixels, pic[DESEJ].pixels, pic[ORIGEM].width, pic[ORIGEM].height,
      pic[DESEJ].width, pic[DESEJ].height);
 
      valida();
