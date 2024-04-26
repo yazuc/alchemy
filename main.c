@@ -62,11 +62,6 @@ void preencherImagem(RGBpixel *imagem_saida, RGBpixel *imagem_origem, RGBpixel *
     // Cria um array para marcar se um pixel de origem já foi usado
 
     bool *pixel_usado = (bool *)malloc(largura_origem * altura_origem * sizeof(bool));
-    if (pixel_usado == NULL) {
-        // Verifica se a alocação de memória foi bem-sucedida
-        printf("Erro ao alocar memoria para o array de pixels usados\n");
-        return;
-    }
 
     // Inicializa todos os elementos desse array como não usados
     for (int i = 0; i < largura_origem * altura_origem; i++) {
@@ -112,6 +107,19 @@ void preencherImagem(RGBpixel *imagem_saida, RGBpixel *imagem_origem, RGBpixel *
             }    
         }
     }
+
+    //Checa se usou trocou todas as posições da imagem original
+    //Como os pixels da imagem original estão todos presentes dentro da saída não acontece nenhum problema
+    //Em casos onde a distância euclidiana não consegue realizar muitos ajustes o máximo pode parar antes
+    //tudo depende da tolerancia para cada imagem e da similaridade das mesmas
+    for(int i = 0; i < altura_origem * largura_origem;i++){
+        if(!pixel_usado[i]){
+            printf("Não usou o pixel na pos: %d da imagem original \n", i);
+            printf("Máximo de posicoes: %d", altura_origem * largura_origem);
+            break;  
+        }
+    }
+
     // Libera a memória alocada para o array de pixels usados
     free(pixel_usado);
 }
