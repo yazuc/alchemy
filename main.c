@@ -45,7 +45,28 @@ void keyboard(unsigned char key, int x, int y);
 // Largura e altura da janela
 int width, height;
 
-#define tolerancia  40.00
+// Função para trocar dois pixels
+void trocaPixels(RGBpixel *a, RGBpixel *b) {
+    RGBpixel temp = *a;
+    *a = *b;
+    *b = temp;
+}
+
+// Função para embaralhar os pixels da imagem
+void embaralhaPixels(Img *image) {
+    srand(time(NULL));
+
+    int numPixels = image->width * image->height;
+
+    for (int i = numPixels - 1; i > 0; i--) {
+        int j = rand() % (i + 1);
+
+        // Trocando os pixels nas posições i e j
+        trocaPixels(&image->pixels[i], &image->pixels[j]);
+    }
+}
+
+#define tolerancia  77.50
 
 // calcula a distancia euclidiana entre duas cores e retorna ok caso a distancia seja menor ou igual à tolerancia.
 // usado para diferenciar se preenche com preto ou se usa a cor mais próxima disponível
@@ -216,8 +237,14 @@ int main(int argc, char *argv[])
     /**/
     // Implementação do algoritmo de transmutação de imagens
     
+    printf("%d \n", pic[ORIGEM].pixels);
+    printf("%d \n", pic[SAIDA].pixels);
+
     //copia pixels de origem para saida, para garantir que todos os pixels estarão na imagem no do processo
     pic[SAIDA].pixels = pic[ORIGEM].pixels;
+
+    //embaralha os pixels para a imagem original ficar irreconhecível caso não tenha muitas trocas
+    embaralhaPixels(&pic[SAIDA]);
 
     //chamada do método que realiza o processo
     preencherImagem(pic[SAIDA].pixels, pic[ORIGEM].pixels, pic[DESEJ].pixels, pic[ORIGEM].width, pic[ORIGEM].height,
